@@ -8,24 +8,20 @@ inputArray = inputArray.map(a => a[0]);
 
 const Bag = function(label){
     var model = {};
-
     var bags = [];
     var containedBy = {};
 
     model.label = label;
     model.addChild = function (bag){
         bags.push(bag);
-        bag.addParent(model);
+        bag.addParent(this);
     }
-
     model.addParent = function(bag){
         containedBy[bag.label] = bag;
     }
-
     model.getParentCount = function(){
         return Object.getOwnPropertyNames(containedBy).length;
     }
-
     model.getAllParentLabels = function(){
         let parents = {};
         Object.getOwnPropertyNames(containedBy).forEach(parent =>{
@@ -36,11 +32,9 @@ const Bag = function(label){
         });
         return parents;
     }
-
     model.getAllParentCount = function(){
-        return Object.getOwnPropertyNames(model.getAllParentLabels()).length;
+        return Object.getOwnPropertyNames(this.getAllParentLabels()).length;
     }
-
     model.getAllChildrenCount = function(){
         let subTotal = bags.length;
         bags.forEach(bag => {
@@ -48,15 +42,12 @@ const Bag = function(label){
         });
         return subTotal;
     }
-
     return model;
 }
 
 const BagCollection = function(){
     var model = {};
-
     var bags = {};
-
     model.addBag = function(description){
         let tuple = description.split(' contain ');
         let label = tuple[0].slice(0,-4).trim();
@@ -80,13 +71,10 @@ const BagCollection = function(){
             }
         })
     }
-
     model.getBags = function(){return bags;}
-
     model.getBagForLabel = function(label){
         return bags[label];
     }
-
     return model;
 }
 
