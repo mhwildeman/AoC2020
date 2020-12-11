@@ -90,11 +90,15 @@ const calculateNextState = function (map) {
                     if (calculateOccupiedVisibleSeats(i, j, map) >= 5) {
                         newMap[i][j] = 'L';
                     }
+                    break;
                 case 'L':
                     if (calculateOccupiedVisibleSeats(i, j, map) === 0) {
                         newMap[i][j] = '#';
                     }
+                    break;
                 case '.':
+                    break;
+                default:
                     break;
             }
         }
@@ -137,10 +141,6 @@ for (var i = 0; i < inputArray.length; i++) {
     newMap[i] = inputArray[i].slice();
 }
 while (!equalArray(newMap, calculateNextState(newMap))) {
-    printMap(newMap);
-    console.log('');
     newMap = calculateNextState(newMap);
 }
-
-printMap(newMap);
 console.log(countSeats(newMap));
