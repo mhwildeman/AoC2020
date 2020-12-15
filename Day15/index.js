@@ -25,9 +25,11 @@ for(i; i<inputArray.length;i++)
 }
 //console.log(lastNumbers);
 
-while(i<2020)
+while(i<30000000)
 {
-    console.log('Turn %d: %d',i+1, nextNumber);
+    if(i===2019 || (i+1)%100000===0){
+        console.log('Turn %d: %d',i+1, nextNumber);
+    }
     var lastNumber = nextNumber;
     if(typeof lastNumbers[lastNumber] === 'undefined'){
         nextNumber = 0;
@@ -38,3 +40,4 @@ while(i<2020)
     lastNumbers[lastNumber]=i;
     i++;
 }
+
