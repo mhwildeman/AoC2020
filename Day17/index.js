@@ -5,22 +5,23 @@ const _ = require('lodash');
 
 const list = fs.readFileSync('input.txt', { encoding: 'utf8' });
 let inputArray = parse(list, { delimiter: ' ' });
-inputArray = [inputArray.map(a => a[0].split(''))];
+inputArray = [[inputArray.map(a => a[0].split(''))]];
 
 class Pocket{
     constructor(initPane){
         this.space = initPane;
         this.calculateDimensions();
-        //console.log(this.calculateState(0,1,0));
-        console.log(this.calculateState(2,1,0));
     }
 
     toString(){
         var value = "";
-        for(let z=0;z<this.z;z++){
-            for(let y=0;y<this.y;y++){
-                for(let x=0;x<this.x;x++){
-                    value+=this.space[z][y][x];
+        for(let w=0;w<this.w;w++){
+            for(let z=0;z<this.z;z++){
+                for(let y=0;y<this.y;y++){
+                    for(let x=0;x<this.x;x++){
+                        value+=this.space[w][z][y][x];
+                    }
+                    value+='\n';
                 }
                 value+='\n';
             }
@@ -31,11 +32,13 @@ class Pocket{
 
     count(){
         var count = 0;
-        for(var z=0;z<this.z;z++){
-            for(var y=0;y<this.y;y++){
-                for(var x=0;x<this.x;x++){
-                    if(this.space[z][y][x]==='#'){
-                        count++;
+        for(var w=0;w<this.w;w++){
+            for(var z=0;z<this.z;z++){
+                for(var y=0;y<this.y;y++){
+                    for(var x=0;x<this.x;x++){
+                        if(this.space[w][z][y][x]==='#'){
+                            count++;
+                        }
                     }
                 }
             }    
@@ -44,35 +47,41 @@ class Pocket{
     }
 
     calculateDimensions(){
-        this.z = this.space.length;
-        this.y = this.space[0].length;
-        this.x = this.space[0][0].length;
+        this.w = this.space.length;
+        this.z = this.space[0].length;
+        this.y = this.space[0][0].length;
+        this.x = this.space[0][0][0].length;
     }
 
-    calculateState(x,y,z){
+    calculateState(x,y,z,w){
         let currentState = '.';
-        if(x>=0 && x<this.x){
-            if(y>=0 && y<this.y){
-                if(z>=0 && z<this.z){
-                    currentState = this.space[z][y][x];
-                }
-            }   
+        if(w>=0 && w<this.w){
+            if(x>=0 && x<this.x){
+                if(y>=0 && y<this.y){
+                    if(z>=0 && z<this.z){
+                        currentState = this.space[w][z][y][x];
+                    }
+                }   
+            }
         }
         let count = 0;
-        for(let zLoc = z-1;zLoc<=z+1;zLoc++){
-            for(let yLoc = y-1;yLoc<=y+1;yLoc++){
-                for(let xLoc = x-1;xLoc<=x+1;xLoc++){
-                    if(xLoc>=0 && xLoc<this.x){
-                        if(yLoc>=0 && yLoc<this.y){
-                            if(zLoc>=0 && zLoc<this.z){
-                                if(!(xLoc===x && yLoc===y && zLoc===z))
-                                {
-                                    count += this.space[zLoc][yLoc][xLoc]==='#'?1:0;
+        for(let wLoc = w-1;wLoc<=w+1;wLoc++){
+            for(let zLoc = z-1;zLoc<=z+1;zLoc++){
+                for(let yLoc = y-1;yLoc<=y+1;yLoc++){
+                    for(let xLoc = x-1;xLoc<=x+1;xLoc++){
+                        if(xLoc>=0 && xLoc<this.x){
+                            if(yLoc>=0 && yLoc<this.y){
+                                if(zLoc>=0 && zLoc<this.z){
+                                    if(wLoc>=0 && wLoc<this.w){
+                                        if(!(xLoc===x && yLoc===y && zLoc===z && wLoc===w))
+                                        {
+                                            count += this.space[wLoc][zLoc][yLoc][xLoc]==='#'?1:0;
+                                        }
+                                    }
                                 }
-                                
-                            }
-                        }   
-                    }            
+                            }   
+                        }            
+                    }
                 }
             }
         }
@@ -92,29 +101,33 @@ class Pocket{
     }
 
     calculateNextStep(){
-        let depth = [];
-        for(var z=-1;z<this.z+1;z++){
-            let height = [];
-            for(var y=-1;y<this.y+1;y++){
-                let width = [];
-                for(var x=-1;x<this.x+1;x++){
-                    width.push(this.calculateState(x,y,z));
+        let time = [];
+        for(var w=-1;w<this.w+1;w++){
+            let depth = [];
+            for(var z=-1;z<this.z+1;z++){
+                let height = [];
+                for(var y=-1;y<this.y+1;y++){
+                    let width = [];
+                    for(var x=-1;x<this.x+1;x++){
+                        width.push(this.calculateState(x,y,z,w));
+                    }
+                    height.push(width);
                 }
-                height.push(width);
+                depth.push(height);   
             }
-            depth.push(height);   
+            time.push(depth);
         }
-        this.space = depth;
+        this.space = time;
         this.calculateDimensions();
     }
 }
 
 let pocket = new Pocket(inputArray);
+console.log(pocket);
 pocket.calculateNextStep();
 pocket.calculateNextStep();
 pocket.calculateNextStep();
 pocket.calculateNextStep();
 pocket.calculateNextStep();
 pocket.calculateNextStep();
-console.log(pocket.toString());
 console.log(pocket.count());
