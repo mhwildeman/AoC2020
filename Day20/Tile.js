@@ -8,10 +8,60 @@ class Tile {
         this.mirroredSides = [];
         this.neighbours = {};
         this.calculateSides();
-        this.topNeighbour = null;
-        this.rightNeighbour = null;
-        this.bottomNeighbour = null;
-        this.leftNeighbour = null;
+    }
+
+    hasTopNeighbour(){
+        return this.hasNeighbour(this.sides[0]);
+    }
+
+    hasRightNeighbour(){
+        return this.hasNeighbour(this.sides[1]);
+    }
+
+    hasBottomNeighbour(){
+        return this.hasNeighbour(this.sides[2]);
+    }
+
+    hasLeftNeighbour(){
+        return this.hasNeighbour(this.sides[3]);
+    }
+
+    hasNeighbour(side){
+        let hasNeighbour = false;
+        Object.keys(this.neighbours).forEach(key => {
+            if(this.neighbours[key].sides.includes(side) || this.neighbours[key].mirroredSides.includes(side))
+            {
+                hasNeighbour = true;
+            }
+        });
+        return hasNeighbour;
+    }
+
+    alignNeighbour(i){
+        let side = this.sides[i];
+        Object.keys(this.neighbours).forEach(key => {
+            if(this.neighbours[key].sides.includes(side) || this.neighbours[key].mirroredSides.includes(side))
+            {
+                if(this.neighbours[key].sides.includes(side)){
+                    this.neighbours[key].flip();
+                }
+                while(this.sides[i]!==this.neighbours[key].mirroredSides[(i+2)%4]){
+                    this.neighbours[key].rotateRight();
+                }
+            }
+        });
+    }
+
+    getNeighbour(i){
+        let neighbour = null;
+        let side = this.sides[i];
+        Object.keys(this.neighbours).forEach(key => {
+            if(this.neighbours[key].sides.includes(side) || this.neighbours[key].mirroredSides.includes(side))
+            {
+                neighbour = this.neighbours[key];
+            }
+        });
+        return neighbour;
     }
 
     calculateSides(){
@@ -43,9 +93,16 @@ class Tile {
         this.mirroredSides = [mirroredTopSide, mirroredRightSide, mirroredBottomSide, mirroredLeftSide];
     }
 
+    flip(){
+        //console.log('Flip: %d',this.id);
+        this.data = this.data.reverse();
+        this.calculateSides();
+    }
+
     rotateRight(calcSides){
         this.data = this.data[0].map((val, index) => this.data.map(row => row[index]).reverse());
         if(typeof calcSides==='undefined' || calcSides){
+            //console.log('Rotate right: %d',this.id);
             this.calculateSides();
         }
     }
@@ -59,7 +116,7 @@ class Tile {
     }
 
     toString(){
-        let stringData = 'Tile '+this.id+': '+Object.keys(this.neighbours)+' neighbours\n';
+        let stringData = 'Tile '+this.id+':\n';
         for(var y=0;y<this.data.length;y++){
             for(var x=0;x<this.data[y].length;x++){
                 stringData+=this.data[y][x];
@@ -96,6 +153,53 @@ class Tile {
             neighbours.push(this.neighbours[key]);
         })
         return neighbours;
+    }
+
+    markDragon(dragon){
+        let dragonHeight = dragon.length;
+        let dragonWidth = dragon[0].length;
+        let tileHeight = this.data.length;
+        let tileWidth = this.data[0].length;
+
+        for(let tileCursorY=0;tileCursorY<tileHeight-dragonHeight;tileCursorY++){
+            for(let tileCursorX=0;tileCursorX<tileWidth-dragonWidth;tileCursorX++){
+                let match = true;
+                for(let dragonCursorY=0;dragonCursorY<dragonHeight;dragonCursorY++){
+                    for(let dragonCursorX=0;dragonCursorX<dragonWidth;dragonCursorX++){
+                        if(dragon[dragonCursorY][dragonCursorX]==='#'){
+                            if(this.data[tileCursorY+dragonCursorY][tileCursorX+dragonCursorX]==='.'){
+                                match=false;
+                            }
+                        }
+                    }
+                }
+                if(match){
+                    console.log('Match');
+                    for(let dragonCursorY=0;dragonCursorY<dragonHeight;dragonCursorY++){
+                        for(let dragonCursorX=0;dragonCursorX<dragonWidth;dragonCursorX++){
+                            if(dragon[dragonCursorY][dragonCursorX]==='#'){
+                                this.data[tileCursorY+dragonCursorY][tileCursorX+dragonCursorX]='O'
+                            }
+                        }
+                    }
+                }      
+            }
+        }
+    }
+
+    countWaves(){
+        let tileHeight = this.data.length;
+        let tileWidth = this.data[0].length;
+
+        let count = 0;
+        for(let tileCursorY=0;tileCursorY<tileHeight;tileCursorY++){
+            for(let tileCursorX=0;tileCursorX<tileWidth;tileCursorX++){
+                if(this.data[tileCursorY][tileCursorX]==='#'){
+                    count ++;
+                }
+            }
+        }
+        return count;
     }
 }
 
