@@ -1,49 +1,67 @@
-//Input
-let cups = '963275481'.split('').map(a => +a);
-// for(let i=cups.length;i<10000000;i++)
-// {
-//     cups.push(i+1);
-// }
-// console.log(cups[0]);
+//Function for obtain cup number at location
+let valueAtLocation = (location, input) => (location <= input.length) ? input[location - 1] : location;
 
-for(let i=0;i<100;i++){
-    let currentCup = cups[0];
-    let destinationCandidate = currentCup-1;
-    if(destinationCandidate===0){
-        destinationCandidate=9;
+let circleToString = startCup => { 
+    let stringValue = "", nextCup = startCup.next; 
+    while (nextCup != startCup) { 
+        stringValue += nextCup.value; 
+        nextCup = nextCup.next; 
+    } 
+    return stringValue; 
+};
+
+let play = function (input, numberOfCups, numberOfTurns) {
+    let cups = {};
+    for (let location = 1; location <= numberOfCups; location++) {
+
+        cups[location] = { value: location };
     }
-    let pickedUpCups = cups.slice(1,4);
-    cups = [cups[0]].concat(cups.slice(4));
+    for (let location = 1; location <= numberOfCups; location++) {
+        //calculate next neighbour of each cup. Every item in the cups will have a neighbour (we'll have a circular linked list).
+        //https://en.wikipedia.org/wiki/Linked_list#Circular_linked_list
+        //We can now shuffle with cups, merely by chaning references.
+        cups[valueAtLocation(location, input)].next = cups[valueAtLocation(location % numberOfCups + 1, input)];
+    }
+
+    //Start with first cup.
+    let current = cups[input[0]];
     
-    //Determine destination
-    while(pickedUpCups.includes(destinationCandidate)){
-        destinationCandidate--;
-        if(destinationCandidate===0){
-            destinationCandidate=9;
-        }
+    for (let turn = 1; turn <= numberOfTurns; turn++) {
+        let triple = current.next;
+        let destination, value = current.value;
+
+        //Pick triple and set neighbour of current to neigbour of triple (we'll define the triple number after insertion).
+        current.next = triple.next.next.next;
+        
+        do {
+            //the crab will keep subtracting one until it finds a cup that wasn't just picked up (as part of next three).
+            value -= 1;
+            if(value===0){
+                value = numberOfCups;
+            }
+            destination = cups[value];
+        } while (destination == triple || destination == triple.next || destination == triple.next.next);
+        
+        //Set the neighbour of triple, to neighbour of destination
+        triple.next.next.next = destination.next;
+
+        //Set the neighbour of destination to inserted triple.
+        destination.next = triple;
+
+        //Set new current.
+        current = current.next;
+
     }
-    //Rotate remaining cups, so the candidate becomes first.
-    while(cups[0]!==destinationCandidate){
-        let firstCup = cups.shift();
-        cups.push(firstCup);
+
+    if (numberOfCups < 100) {
+        console.log("Part 1", circleToString(cups[1]));
+    } else {
+        //Get cup next to 1.
+        let nextToOne = cups[1].next;
+        //Product 
+        console.log("Part 2", nextToOne.value, "*", nextToOne.next.value, "=", nextToOne.value * nextToOne.next.value);
     }
-    //Put cups back right after candidate/
-    cups = [cups[0]].concat(pickedUpCups).concat(cups.slice(1));
-   
-    //Rotate until current cup is first.
-    while(cups[0]!==currentCup){
-        firstCup = cups.shift();
-        cups.push(firstCup);
-    }
-    //Shift one more, so that new current cup becomes 1st.
-    firstCup = cups.shift();
-    cups.push(firstCup);
-}
-//Make element 1 first.
-while(cups[0]!==1){
-    firstCup = cups.shift();
-    cups.push(firstCup);
 }
 
-//Print remaining cups to console
-console.log(cups.slice(1).join(''));
+play("963275481", 9, 100);
+play("963275481", 1000000, 10000000);
