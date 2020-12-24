@@ -64,4 +64,4 @@ let play = function (input, numberOfCups, numberOfTurns) {
 }
 
 play("963275481", 9, 100);
-play("963275481", 1000000, 10000000);
+play("963275481", Math.pow(10,6), Math.pow(10,7));
